@@ -1,13 +1,12 @@
-const express = require('express');
-const app = express();
+import app from "./src/app.js";
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import config from './src/config/config.js';
+import { connectToDB } from "./src/config/database.js";
 
-require('dotenv').config();
-const PORT = process.env.PORT || 3000;
+const PORT = config.PORT;
 
-app.get('/', function (req, res){
-    res.status(200).json({token: "1234"});
-});
-
-const server = app.listen(PORT, function(){
+connectToDB();
+app.listen(PORT, function(){
     console.log(`Server is listening on PORT ${PORT}`);
 })
