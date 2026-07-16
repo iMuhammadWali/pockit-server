@@ -7,6 +7,7 @@ import { connectToDB } from "./src/config/database.js";
 const PORT = config.PORT;
 
 connectToDB();
+
 app.listen(PORT, function(){
     console.log(`Server is listening on PORT ${PORT}`);
 })

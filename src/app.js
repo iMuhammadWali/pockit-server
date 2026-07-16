@@ -1,16 +1,16 @@
 import express from "express";
-import authRouter from "./routes/auth.route.js"
+import authRouter from "./routes/auth.route.js";
 
 const app = express();
 app.use(express.json());
 
-app.get('/health', async (req, res)=>{
-    const uptime = process.uptime();
-    const hours = Math.floor(uptime / 3600);
-    const minutes = Math.floor((uptime % 3600) / 60);
-    const seconds = Math.floor(uptime % 60);
+app.get("/health", async (req, res) => {
+  const uptime = process.uptime();
+  const hours = Math.floor(uptime / 3600);
+  const minutes = Math.floor((uptime % 3600) / 60);
+  const seconds = Math.floor(uptime % 60);
 
-    res.status(200).send(`<!DOCTYPE html>
+  res.status(200).send(`<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
