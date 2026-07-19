@@ -10,7 +10,7 @@ app.get("/health", async (req, res) => {
   const minutes = Math.floor((uptime % 3600) / 60);
   const seconds = Math.floor(uptime % 60);
 
-  res.status(200).send(`<!DOCTYPE html>
+res.status(200).send(`<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -23,26 +23,26 @@ app.get("/health", async (req, res) => {
     align-items: center;
     justify-content: center;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: linear-gradient(135deg, #0f172a, #1e293b);
+    background: linear-gradient(135deg, #fffbf7, #fdf7f0);
   }
   .card {
-    background: #111827;
-    border: 1px solid #1f2937;
+    background: #ffffff;
+    border: 1px solid #f7e3e5;
     border-radius: 16px;
     padding: 2.5rem 3rem;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    box-shadow: 0 20px 40px rgba(192, 64, 74, 0.12);
     text-align: center;
-    color: #e5e7eb;
+    color: #c0404a;
     min-width: 320px;
   }
   .dot {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: #22c55e;
+    background: #ff9999;
     display: inline-block;
     margin-right: 8px;
-    box-shadow: 0 0 12px #22c55e;
+    box-shadow: 0 0 12px #ff9999;
   }
   h1 {
     font-size: 1.4rem;
@@ -50,22 +50,23 @@ app.get("/health", async (req, res) => {
     display: flex;
     align-items: center;
     justify-content: center;
+    color: #c0404a;
   }
   .status {
     font-size: 2rem;
     font-weight: 700;
-    color: #22c55e;
+    color: #ff9999;
     margin-bottom: 1.5rem;
   }
   .row {
     display: flex;
     justify-content: space-between;
     padding: 0.4rem 0;
-    border-top: 1px solid #1f2937;
+    border-top: 1px solid #f7e3e5;
     font-size: 0.9rem;
   }
-  .label { color: #9ca3af; }
-  .value { color: #e5e7eb; font-weight: 600; }
+  .label { color: #e8909a; }
+  .value { color: #c0404a; font-weight: 600; }
 </style>
 </head>
 <body>

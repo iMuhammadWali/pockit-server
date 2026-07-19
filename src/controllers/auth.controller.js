@@ -68,8 +68,8 @@ export async function register(req, res) {
 }
 
 // This function returns the username, email, refresh and access token.
-
 export async function login(req, res) {
+  console.log("Login request");
   try {
     const { email, password } = req.body;
     if (!email) {
@@ -115,12 +115,27 @@ export async function login(req, res) {
       return;
     }
 
+    const accessToken = jwt.sign(
+      { id: user._id, username: user.username, email: user.email },
+      config.JWT_SECRET,
+      { expiresIn: "15m" },
+    );
+
+    const refreshToken = jwt.sign(
+      { id: user._id },
+      config.JWT_SECRET,
+      { expiresIn: "7d" },
+    );
+
+
     res.status(200).json({
       message: "User logged in successfully.",
       user: {
         username: user.username,
         email,
       },
+      refreshToken,
+      accessToken,
     });
   } catch (err) {
     res.status(500).json({
