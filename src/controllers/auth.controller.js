@@ -1,10 +1,17 @@
-import userModel from "../models/user.model.js";
+// third-party
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
+
+// config
 import config from "../config/config.js";
-import catchAsync from "../utils/catchAsync.util.js";
+
+// models
+import userModel from "../models/user.model.js";
 import sessionModel from "../models/session.model.js";
+
+// utils
 import ApiError from "../utils/apiError.util.js";
+import { create } from "domain";
 
 const REFRESH_TOKEN_BYTES = 32;
 
@@ -60,10 +67,7 @@ export async function register(req, res) {
     throw new ApiError(409, "Username or email already exists");
   }
 
-  const hashedPassword = crypto
-    .createHash("sha256")
-    .update(password)
-    .digest("hex");
+  const hashedPassword = createHash(password);
 
   // Need to abstract this but will do all of that after completing the auth system.
   const user = await userModel.create({
@@ -137,14 +141,20 @@ export async function login(req, res) {
 
 // This function needs second chance.
 export async function getMe(req, res) {
-  const token = req.headers.authorization?.split(" ")[1];
+  const accessToken = req.headers.authorization?.split(" ")[1];
 
-  if (!token) {
+  if (!accessToken) {
     throw new ApiError(401, "token not found");
   }
 
-  const decoded = jwt.verify(token, config.JWT_SECRET);
-  console.log(decoded);
+  try {
+    const decoded = jwt.verify(accessToken, config.JWT_SECRET);
+  } catch (e) {
+    if (e.name === "TokenExpiredError") {
+      throw new ApiError(401, "Access token expired.");
+    }
+    throw new ApiError(401, "Invalid access token");
+  }
 
   const user = await userModel.findOne({
     _id: decoded.id,
@@ -210,5 +220,23 @@ export async function rotate(req, res) {
     message: "Token refreshed successfully.",
     refreshToken: newRefreshToken.rawToken,
     accessToken,
+  });
+}
+
+export async function logout(req, res) {
+  const { refreshToken } = req.body;
+
+  if (refreshToken) {
+    const session = await sessionModel.findOne({
+      refreshTokenHash: createHash(refreshToken)
+    });
+
+    if (session){
+      session.revokedAt = new Date();
+      await session.save();
+    }
+  }
+  res.status(200).json({
+    message: "Logged out successfully.",
   });
 }
