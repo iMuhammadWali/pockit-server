@@ -11,5 +11,5 @@ export default function authHandler(req, res, next) {
     });
     return;
   }
-  
+  return;
 }

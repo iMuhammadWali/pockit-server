@@ -6,5 +6,6 @@ const router = express.Router();
 router.post("/register", catchAsync(authController.register));
 router.post('/login', catchAsync(authController.login));
 router.get('/get-me', catchAsync(authController.getMe));
+router.post('/rotate', catchAsync(authController.rotate));
 
 export default router;

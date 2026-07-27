@@ -38,9 +38,7 @@ function getCredentialError(username, email, password, isRegister = false) {
 function createRefreshToken() {
   const bytes = crypto.randomBytes(REFRESH_TOKEN_BYTES);
   const rawToken = bytes.toString("hex");
-  const expiresAt = new Date(
-    Date.now() + config.jwt.refreshExpiresInDays * 24 * 60 * 60 * 1000,
-  );
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   return { rawToken, expiresAt };
 }
 
@@ -98,7 +96,10 @@ export async function login(req, res) {
   }
 
   const storedPasswordHash = user.password;
-  const loginAttemptPasswordHash = crypto.createHash("sha256").update(password).digest("hex");
+  const loginAttemptPasswordHash = crypto
+    .createHash("sha256")
+    .update(password)
+    .digest("hex");
 
   // Some function that prevents hackers from guessing how far they are from actual password.
   const isEqual = crypto.timingSafeEqual(
@@ -110,18 +111,17 @@ export async function login(req, res) {
     throw new ApiError(401, "Password is wrong");
   }
 
-  const accessToken = jwt.sign(
-    { id: user._id, username: user.username, email: user.email },
-    config.JWT_SECRET,
-    { expiresIn: "15m" },
-  );
+  const accessToken = jwt.sign({ id: user._id }, config.JWT_SECRET, {
+    expiresIn: "15m",
+  });
 
   const refreshToken = createRefreshToken();
 
-  const refreshTokenHash = crypto.createHash('sha256').update(refreshToken.rawToken).digest('hex');
-  const session = sessionModel.create({
+  const refreshTokenHash = createHash(refreshToken.rawToken);
+  const session = await sessionModel.create({
     userId: user._id,
     refreshTokenHash,
+    expiresAt: refreshToken.expiresAt,
   });
 
   res.status(200).json({
@@ -130,11 +130,12 @@ export async function login(req, res) {
       username: user.username,
       email,
     },
-    refreshToken,
+    refreshToken: refreshToken.rawToken,
     accessToken,
   });
 }
 
+// This function needs second chance.
 export async function getMe(req, res) {
   const token = req.headers.authorization?.split(" ")[1];
 
@@ -149,7 +150,7 @@ export async function getMe(req, res) {
     _id: decoded.id,
   });
   if (!user) {
-    // Will think later when I will need this route.
+    throw new ApiError(404, "User not found.");
   }
 
   res.status(200).json({
@@ -164,13 +165,50 @@ export async function getMe(req, res) {
 // get the refresh token from cookie.
 // revoke it from session.
 // generate a new access and new refresh token.
-export async function rotateRefreshAndAccessToken(req, res) {
+
+function createHash(string) {
+  return crypto.createHash("sha256").update(string).digest("hex");
+}
+
+export async function rotate(req, res) {
   const { refreshToken } = req.body;
 
   if (!refreshToken) {
     throw new ApiError(401, "Refresh token is required.");
   }
 
+  const session = await sessionModel.findOne({
+    refreshTokenHash: createHash(refreshToken),
+  });
 
+  // if the refresh token is malformed (or is fake) there is no session
+  // created by the server for it.
+  if (!session) {
+    throw new ApiError(401, "Invalid refresh token.");
+  }
 
+  // if the session is revoked (user logged out)
+  // no need to rotate it.
+  if (session.revokedAt) {
+    throw new ApiError(401, "Refresh token has been revoked.");
+  }
+
+  if (session.expiresAt < new Date()) {
+    throw new ApiError(401, "Refresh token has expired.");
+  }
+
+  const accessToken = jwt.sign({ id: session.userId }, config.JWT_SECRET, {
+    expiresIn: "15m",
+  });
+
+  const newRefreshToken = createRefreshToken();
+  session.refreshTokenHash = createHash(newRefreshToken.rawToken);
+  session.expiresAt = newRefreshToken.expiresAt;
+  await session.save();
+
+  res.status(200).json({
+    message: "Token refreshed successfully.",
+    refreshToken: newRefreshToken.rawToken,
+    accessToken,
+  });
 }
