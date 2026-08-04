@@ -1,4 +1,7 @@
+// models
 import walletModel from "../models/wallet.model.js";
+
+// utils
 import ApiError from "../utils/apiError.util.js";
 import formatList from "../utils/formatList.util.js";
 
