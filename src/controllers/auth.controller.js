@@ -11,17 +11,9 @@ import sessionModel from "../models/session.model.js";
 
 // utils
 import ApiError from "../utils/apiError.util.js";
-import { create } from "domain";
+import formatList from "../utils/formatList.util.js";
 
 const REFRESH_TOKEN_BYTES = 32;
-
-function formatList(items) {
-  if (items.length === 1) {
-    return `${items[0]} is required.`;
-  }
-
-  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]} are required.`;
-}
 
 function getCredentialError(username, email, password, isRegister = false) {
   const missing = [];

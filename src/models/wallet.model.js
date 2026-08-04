@@ -16,4 +16,9 @@ const walletSchema = new mongoose.Schema({
 });
 
 // I am not enforcing a min constraint on balance because balance can be negative 
-// and it shows debt.
+// and in pockit, it shows debt.
+
+walletSchema.index({ userId: 1, name: 1 }, { unique: true });
+
+const walletModel = mongoose.model("wallets", walletSchema);
+export default walletModel;
