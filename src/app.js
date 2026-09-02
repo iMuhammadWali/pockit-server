@@ -16,7 +16,7 @@ export default function createApp() {
 
   app.use("/health", healthRouter);
   app.use("/api/auth", authRouter);
-  app.use("/api/wallet", authHandler, walletRouter);
+  app.use("/api/wallets", authHandler, walletRouter);
 
   app.use(errorHandler);
 

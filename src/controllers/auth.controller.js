@@ -138,9 +138,9 @@ export async function getMe(req, res) {
   if (!accessToken) {
     throw new ApiError(401, "token not found");
   }
-
+  let decoded = null;
   try {
-    const decoded = jwt.verify(accessToken, config.JWT_SECRET);
+    decoded = jwt.verify(accessToken, config.JWT_SECRET);
   } catch (e) {
     if (e.name === "TokenExpiredError") {
       throw new ApiError(401, "Access token expired.");
@@ -151,6 +151,7 @@ export async function getMe(req, res) {
   const user = await userModel.findOne({
     _id: decoded.id,
   });
+
   if (!user) {
     throw new ApiError(404, "User not found.");
   }
