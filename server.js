@@ -1,12 +1,20 @@
-import app from "./src/app.js";
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
-import config from './src/config/config.js';
-import { connectToDB } from "./src/config/database.js";
+import config from "./src/config/config.js";
+import { connectToDB } from "./src/db/index.js";
+import createApp from "./src/app.js";
 
 const PORT = config.PORT;
+const app = createApp();
 
-connectToDB();
-app.listen(PORT, function(){
-    console.log(`Server is listening on PORT ${PORT}`);
-})
+async function startServer() {
+  try {
+    await connectToDB();
+    app.listen(PORT, () => {
+      console.log(`Server is listening on PORT ${PORT}`);
+    });
+  } catch (err) {
+    console.error("Error during server startup:", err);
+    process.exit(1);
+  }
+}
+
+startServer();

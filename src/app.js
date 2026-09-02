@@ -1,9 +1,24 @@
+// third-party
 import express from "express";
-import authRouter from "./routes/auth.route.js"
 
+//routes
+import authRouter from "./routes/auth.route.js";
+import healthRouter from "./routes/health.route.js";
+import walletRouter from "./routes/wallet.route.js";
 
-const app = express();
-app.use(express.json());
-app.use("/api/auth", authRouter);
+// middleware
+import errorHandler from "./middleware/error.middleware.js";
+import authHandler from "./middleware/auth.middleware.js";
 
-export default app;
+export default function createApp() {
+  const app = express();
+  app.use(express.json());
+
+  app.use("/health", healthRouter);
+  app.use("/api/auth", authRouter);
+  app.use("/api/wallets", authHandler, walletRouter);
+
+  app.use(errorHandler);
+
+  return app;
+}
