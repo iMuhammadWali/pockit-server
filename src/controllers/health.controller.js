@@ -1,11 +1,5 @@
 import { getHealthHTML } from "../views/health.view.js";
 
-/**
- * Controller for rendering the server health status.
- * 
- * @param {object} req - Express request object
- * @param {object} res - Express response object
- */
 export async function getHealth(req, res) {
   try {
     const uptime = process.uptime();
@@ -13,6 +7,22 @@ export async function getHealth(req, res) {
     const minutes = Math.floor((uptime % 3600) / 60);
     const seconds = Math.floor(uptime % 60);
     const timestamp = new Date().toISOString();
+
+    const { format, time } = req.query;
+
+    // Fast JSON response if ?time or ?format=json or Accept: application/json
+    if (time !== undefined || format === "json" || req.headers.accept?.includes("application/json")) {
+      return res.status(200).json({
+        status: "Running",
+        timestamp,
+        uptime: {
+          hours,
+          minutes,
+          seconds,
+          totalSeconds: Math.floor(uptime),
+        },
+      });
+    }
 
     const html = getHealthHTML(hours, minutes, seconds, timestamp);
     res.status(200).send(html);
